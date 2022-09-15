@@ -13,8 +13,8 @@ def log_sum(smat):
 
 
 class BiLSTM_CRF(nn.Module):
-    def __init__(self, vocab_size, tag_to_ix, embedding_dim,
-                 hidden_dim, char_lstm_dim=25, char_to_ix=None,
+    def __init__(self, vocab_size: int, tag_to_ix: Mapping[str, int], embedding_dim: int,
+                 hidden_dim: int, char_lstm_dim=25, char_to_ix=None,
                  pre_word_embeds=None, char_embedding_dim=25,):
 
         super(BiLSTM_CRF, self).__init__()
@@ -25,7 +25,7 @@ class BiLSTM_CRF(nn.Module):
         self.tagset_size = len(tag_to_ix)
         self.out_channels = char_lstm_dim
 
-        print("out_channels: %d, hidden_dim: %d, " % ( char_lstm_dim, hidden_dim))
+        print(f"out_channels: {char_lstm_dim}, hidden_dim: {hidden_dim}, ")
 
         if char_embedding_dim is not None:
             self.char_lstm_dim = char_lstm_dim

@@ -129,7 +129,7 @@ def mapping(type_mapping, sentences, lower=None):
         dico[BiLSTM_CRF.START_TAG] = -1
         dico[BiLSTM_CRF.STOP_TAG] = -2
         tag_to_id, id_to_tag = create_mapping(dico)
-        print("Found %i unique named entity tags" % len(dico))
+        print(f"Found {len(dico)} unique named entity tags")
         return dico, tag_to_id, id_to_tag
 
     elif type_mapping == "char":
@@ -139,7 +139,7 @@ def mapping(type_mapping, sentences, lower=None):
         dico['<UNK>'] = 10000000
 
         char_to_id, id_to_char = create_mapping(dico)
-        print("Found %i unique characters" % len(dico))
+        print(f"Found {len(dico)} unique characters")
         return dico, char_to_id, id_to_char
 
     elif type_mapping == "word":
@@ -150,12 +150,12 @@ def mapping(type_mapping, sentences, lower=None):
         dico = {k: v for k, v in dico.items() if v >= 3}
         word_to_id, id_to_word = create_mapping(dico)
 
-        print("Found %i unique words (%i in total)" % (len(dico), len(words)))
+        print(f"Found {len(dico)} unique words ({len(words)} in total)")
         return dico, word_to_id, id_to_word
 
 
 def augment_with_pretrained(dictionary, ext_emb_path, words):
-    print('Loading pretrained embeddings from %s...' % ext_emb_path)
+    print(f'Loading pretrained embeddings from {ext_emb_path}...')
     assert os.path.isfile(ext_emb_path)
 
     pretrained = set([

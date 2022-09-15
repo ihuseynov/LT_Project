@@ -182,7 +182,7 @@ if __name__ == "__main__":
     test_data = prepare_dataset(test_sentences, word_to_id, char_to_id, tag_to_id, lower)
     test_train_data = prepare_dataset(test_train_sentences, word_to_id, char_to_id, tag_to_id, lower)
 
-    print("%i / %i / %i sentences in train / dev / test." % (len(train_data), len(dev_data), len(test_data)))
+    print(f"{len(train_data)} / {len(dev_data)} / {len(test_data)} sentences in train / dev / test.")
 
     all_word_embeds = {}
     for i, line in enumerate(open(pre_emb, "r", encoding="utf-8")):
@@ -198,7 +198,7 @@ if __name__ == "__main__":
         elif w.lower() in all_word_embeds:
             word_embeds[word_to_id[w]] = all_word_embeds[w.lower()]
 
-    print("Loaded %i pretrained embeddings." % len(all_word_embeds))
+    print(f"Loaded {len(all_word_embeds)} pretrained embeddings.")
 
     with open(mapping_file, "wb") as f:
 
