@@ -14,5 +14,4 @@ In this project I have tried to address this approach to solve Named Entity Reco
 
 2. To run the project one should run the train.py file. This will generate model and more files within it. After running and training the model, evaulation.py file can be run and you should receive the results on the test data. 
 
-3.
-The result in this project was 91% F1.
+3. The result in this project was 91% F1.
