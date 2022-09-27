@@ -1,3 +1,5 @@
+from typing import Mapping
+
 import torch
 import torch.nn as nn
 from utils import *
@@ -8,11 +10,19 @@ STOP_TAG = "<STOP>"
 
 
 def log_sum(smat):
+
+    """ Compute log sum exp in a numerically stable way for the forward algorithm.
+        status matrix (smat): (tagset_size, tagset_size)
+    """
+
     max_score = smat.max(dim=0, keepdim=True).values
     return (smat - max_score).exp().sum(axis=0, keepdim=True).log() + max_score
 
 
 class BiLSTM_CRF(nn.Module):
+    """
+    This class represents the joint algorithm of Conditional Randon Fields and Neural Networks.
+    """
     def __init__(self, vocab_size: int, tag_to_ix: Mapping[str, int], embedding_dim: int,
                  hidden_dim: int, char_lstm_dim=25, char_to_ix=None,
                  pre_word_embeds=None, char_embedding_dim=25,):
@@ -58,18 +68,17 @@ class BiLSTM_CRF(nn.Module):
         self.transitions.data[:, tag_to_ix[START_TAG]] = -10000
         self.transitions.data[tag_to_ix[STOP_TAG], :] = -10000
 
-    def _get_lstm_features(self, sentence, chars, caps):
+    def _get_lstm_features(self, sentence, chars):
 
         chars_embeds = self.char_embeds(chars).unsqueeze(1)
         chars_cnn_out3 = self.char_cnn3(chars_embeds)
         chars_embeds = nn.functional.max_pool2d(chars_cnn_out3,kernel_size=(chars_cnn_out3.size(2), 1)).view(chars_cnn_out3.size(0), self.out_channels)
 
         embeds = self.word_embeds(sentence)
-
         embeds = torch.cat((embeds, chars_embeds), 1)
-
         embeds = embeds.unsqueeze(1)
         embeds = self.dropout(embeds)  # dropout
+
         lstm_out, _ = self.lstm(embeds)
         lstm_out = lstm_out.view(len(sentence), self.hidden_dim * 2)
         lstm_out = self.dropout(lstm_out)  # dropout
@@ -77,7 +86,7 @@ class BiLSTM_CRF(nn.Module):
         return lstm_feats
 
     def _score_sentence(self, feats, tags):
-
+        """Returns the score of a provided tag sequence"""
         r = torch.LongTensor(range(feats.size()[0]))
         pad_start_tags = torch.cat([torch.LongTensor([self.tag_to_ix[START_TAG]]), tags])
         pad_stop_tags = torch.cat([tags, torch.LongTensor([self.tag_to_ix[STOP_TAG]])])
@@ -86,25 +95,28 @@ class BiLSTM_CRF(nn.Module):
         return score
 
     def _forward_alg(self, feats):
-
+        """Calculate forward algorithm in the log domain"""
         alpha = torch.full((1, self.tagset_size), -10000.0)
-
         alpha[0][self.tag_to_ix[START_TAG]] = 0.0
 
         for feat in feats:
             alpha = log_sum(alpha.T + feat.unsqueeze(0) + self.transitions)
         return log_sum(alpha.T + 0 + self.transitions[:, [self.tag_to_ix[STOP_TAG]]]).flatten()[0]
 
-    def neg_log_likelihood(self, sentence, tags, chars, caps):
+    def neg_log_likelihood(self, sentence, tags, chars):
+        """
+        sentence, tags is a list of ints
+        features is a 2D tensor, len(sentence) * self.tagset_size
 
-        features = self._get_lstm_features(sentence, chars, caps)
+        """
 
+        features = self._get_lstm_features(sentence, chars)
         forward_score = self._forward_alg(features)
         gold_score = self._score_sentence(features, tags)
         return forward_score - gold_score
 
-    def forward(self, sentence, chars, caps):
-        features = self._get_lstm_features(sentence, chars, caps)
+    def forward(self, sentence, chars):
+        features = self._get_lstm_features(sentence, chars)
         backtrace = []
 
         alpha = torch.full((1, self.tagset_size), -10000.0)

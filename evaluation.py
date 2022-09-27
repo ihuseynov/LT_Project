@@ -1,5 +1,4 @@
 import torch
-import time
 import pickle
 import numpy as np
 from torch.autograd import Variable
@@ -15,7 +14,6 @@ tag_to_id = mappings['tag_to_id']
 id_to_tag = {k[1]: k[0] for k in tag_to_id.items()}
 char_to_id = mappings['char_to_id']
 word_embeds = mappings['word_embeds']
-
 
 lower = 1
 zeros = 0
@@ -80,10 +78,10 @@ def eval(model, all_data):
         *([id_to_tag[i] for i in range(confusion_matrix.size(0))] + ["Percent"])))
 
     for i in range(confusion_matrix.size(0)):
-
         print(("{: >2}{: >7}{: >7}%s{: >9}" % ("{: >7}" * confusion_matrix.size(0))).format(
             str(i), id_to_tag[i], str(confusion_matrix[i].sum().item()),
             *([confusion_matrix[i][j] for j in range(confusion_matrix.size(0))] +
               ["%.3f" % (confusion_matrix[i][i] * 100. / max(1, confusion_matrix[i].sum()))])))
+
 
 eval(model, test_data)
